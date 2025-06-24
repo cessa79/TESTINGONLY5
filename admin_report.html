@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Report - All Branches</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+ 
+
+ <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      height: 100%;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .logo-container img {
+      height: 80px;
+      width: auto;
+    }
+
+    .logo-container h1 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .branch-name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-left: 0.10rem;
+      color: #ffffff;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-buttons a {
+      background-color: #ffffff;
+      color: #800000;
+      padding: 0.6rem 1.3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .main-content {
+      padding: 2rem;
+    }
+
+    h2 {
+      color: #800000;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-container {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .search-container input {
+      padding: 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      width: 60%;
+    }
+
+    .report-list {
+  max-height: 500px;
+  overflow-y: auto;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  margin-bottom: 2rem;
+}
+
+
+    .report-list h3 {
+      color: #f5c21d;
+      margin-bottom: 1rem;
+    }
+
+    .report-entry {
+      padding: 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .report-entry:last-child { border-bottom: none; }
+
+    .report-meta {
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .report-title {
+      font-weight: bold;
+      color: #a64a00;
+      margin-bottom: 0.3rem;
+    }
+
+    .report-category {
+      font-size: 0.85rem;
+      color: #7c2100;
+      font-style: italic;
+    }
+
+    .report-description {
+  margin-top: 0.5rem;
+  color: #333;
+  line-height: 1.4;
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Admin Dashboard</span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="admin.html">Home</a>
+      <a href="admin_report.html">Reports</a>
+      <a href="admin_appointment.html">Appointments</a>
+      <a href="admin_customerlist.html">Customers</a>
+      <a href="admin_attendance.html">Attendance</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <h2>All Branch Reports</h2>
+
+    
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search by branch, report title, or category" oninput="filterReports()">
+    </div>
+
+   
+    <div id="reportList" class="report-list">
+      <h3>Reports from all branches</h3>
+
+    </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import {
+    getFirestore, getDocs, collection, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.appspot.com",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const branchKeys = {
+    'Greenhills': 'gh_reports',
+    'Abreeza': 'abreeza_reports',
+    'Bacolod': 'bcd_reports',
+    'Cagayan de Oro': 'cdo_reports',
+    'General Santos': 'gensan_reports',
+    'Lanang': 'lanang_reports'
+  };
+
+  let allReports = [];
+
+  async function loadReports() {
+    const reportListDiv = document.getElementById('reportList');
+    allReports = [];
+
+    for (const [branchName, collectionName] of Object.entries(branchKeys)) {
+      const snapshot = await getDocs(collection(db, collectionName));
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        allReports.push({
+          id: docSnap.id,
+          branch: branchName,
+          title: data.title || '',
+          category: data.category || '',
+          description: data.description || '',
+          date: data.date || '',
+          employee: data.employee || '',
+          timestamp: data.timestamp?.toDate?.() || (data.date ? new Date(data.date) : new Date(0))
+
+        });
+      });
+    }
+
+    allReports.sort((a, b) => b.timestamp - a.timestamp);
+    renderReports(allReports);
+  }
+
+  function renderReports(reports) {
+    const reportListDiv = document.getElementById('reportList');
+    reportListDiv.innerHTML = '<h3>Reports from all branches</h3>';
+
+    reports.forEach(report => {
+      const entry = document.createElement('div');
+      entry.classList.add('report-entry');
+
+      entry.innerHTML = `
+        <div class="report-title">${report.title}</div>
+        <div class="report-category">${report.category}</div>
+        <div class="report-meta">Date: ${new Date(report.timestamp).toLocaleDateString()} | Branch: ${report.branch}</div>
+        <div class="report-description">${report.description}</div>
+        <div class="report-meta">Employee: ${report.employee || 'Not provided'}</div>
+      `;
+
+      reportListDiv.appendChild(entry);
+    });
+  }
+
+  window.filterReports = function() {
+    const keyword = document.getElementById("searchInput").value.toLowerCase();
+    const filtered = allReports.filter(report =>
+      report.branch.toLowerCase().includes(keyword) ||
+      report.title.toLowerCase().includes(keyword) ||
+      report.category.toLowerCase().includes(keyword)
+    );
+    renderReports(filtered);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadReports);
+</script>
+
+</body>
+</html>

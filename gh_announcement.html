@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Announcements - Greenhills</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      height: 100%;
+      background: linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .logo-container img {
+      height: 80px;
+      width: auto;
+    }
+    .logo-container h1 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .branch-name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .nav-buttons a {
+      background-color: #ffffff;
+      color: #800000;
+      padding: 0.6rem 1.3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover {
+      background: linear-gradient(135deg, #f55a1d 0%, #f5c21d 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .main-content {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    h2 {
+      color: #800000;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    form, .calendar, .announcement-list {
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      margin-bottom: 2rem;
+    }
+    label {
+      font-weight: 600;
+      color: #800000;
+      display: block;
+      margin: 1rem 0 0.5rem;
+    }
+    input[type="date"], input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.5rem;
+      background-color: #800000;
+      color: white;
+      border: none;
+      border-radius: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background-color: #a60000;
+    }
+    ul { list-style: none; padding-left: 0; }
+    li { padding: 0.5rem 0; border-bottom: 1px solid #ddd; }
+    .highlight {
+      background-color: #ffe0c2;
+      border-radius: 50%;
+      padding: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="E-Restore Logo" />
+      <h1>ERestore Leatherworks <span class="branch-name">| Greenhills</span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="gh.html">Homepage</a>
+      <a href="gh_announcement.html">Announcements</a>
+      <a href="gh_report.html">Reports</a>
+      <a href="gh_appointment.html">Appointments</a>
+      <a href="gh_customerlist.html">Customers</a>
+      <a href="gh_attendance.html">Attendance</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <h2>Announcements</h2>
+    <form id="announcementForm">
+      <label for="announcementDate">Date</label>
+      <input type="date" id="announcementDate" required />
+      <label for="announcementText">Announcement</label>
+      <input type="text" id="announcementText" placeholder="Enter announcement here..." required />
+      <button type="submit">Post Announcement</button>
+    </form>
+
+    <input type="text" id="searchInput" placeholder="Search announcements..." style="width: 100%; padding: 0.6rem; margin-bottom: 1.5rem; border-radius: 0.5rem; border: 1px solid #ccc;" />
+    <div class="announcement-list">
+      <h3>Posted Announcements</h3>
+      <ul id="announcementList"></ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc
+    } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+      authDomain: "erestore-leatherworks.firebaseapp.com",
+      projectId: "erestore-leatherworks",
+      storageBucket: "erestore-leatherworks.firebasestorage.app",
+      messagingSenderId: "727698074030",
+      appId: "1:727698074030:web:58870b6be96934e71c003f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const form = document.getElementById('announcementForm');
+    const dateInput = document.getElementById('announcementDate');
+    const textInput = document.getElementById('announcementText');
+    const list = document.getElementById('announcementList');
+
+    async function renderAnnouncement() {
+  const snapshot = await getDocs(query(collection(db, "announcement"), orderBy("date", "desc")));
+  allAnnouncements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  renderFilteredList(allAnnouncements);
+}
+
+    
+    document.getElementById("searchInput").addEventListener("input", function () {
+  const term = this.value.toLowerCase();
+  const filtered = allAnnouncements.filter(a =>
+    a.text.toLowerCase().includes(term) || a.date.includes(term)
+  );
+  renderFilteredList(filtered);
+});
+
+let allAnnouncements = [];
+
+function renderFilteredList(data) {
+  list.innerHTML = '';
+  data.forEach((ann) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <strong>${ann.date}:</strong> ${ann.text}
+      <button onclick="deleteAnnouncement('${ann.id}')" style="margin-left: 1rem; background: #b30000; color: white; border: none; padding: 0.3rem 0.7rem; border-radius: 0.5rem; cursor: pointer;">Delete</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+    window.deleteAnnouncement = async (id) => {
+      if (confirm("Are you sure you want to delete this announcement?")) {
+        await deleteDoc(doc(db, "announcement", id));
+        renderAnnouncement();
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newAnnouncement = {
+        date: dateInput.value,
+        text: textInput.value.trim()
+      };
+      await addDoc(collection(db, "announcement"), newAnnouncement);
+      renderAnnouncement();
+      form.reset();
+    });
+
+    renderAnnouncement();
+  </script>
+</body>
+</html>

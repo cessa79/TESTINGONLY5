@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Appointments</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      height: 100%;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.9), #ffffff9a, rgba(109, 20, 20, 0.9)),
+        url('bg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    header {
+      background-color: #800000;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .logo-container img {
+      height: 80px;
+      width: auto;
+    }
+    .logo-container h1 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .branch-name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-left: 0.10rem;
+      color: #ffffff;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .nav-buttons a {
+      background-color: #ffffff;
+      color: #800000;
+      padding: 0.6rem 1.3rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .nav-buttons a:hover {
+      background-color: #f5c21d;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .main-content {
+      padding: 3rem;
+    }
+    .content-box {
+      background-color: rgb(255, 255, 255);
+      padding: 2rem;
+      border-radius: 2rem;
+      box-shadow: 0 8px 30px rgba(44, 12, 0, 0.3);
+      max-width: 1200px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #800000;
+      margin-bottom: 1.5rem;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    button {
+      background-color: #800000;
+      color: white;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background-color: #660303;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .summary {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      width: 100%;
+    }
+    .modal-content input {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+    }
+    .modal-content button {
+      width: 100%;
+      background-color: #800000;
+    }
+    .table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 1rem;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+    @media print {
+      .action-buttons, header {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="logo.png" alt="ERestore Logo">
+      <h1>ERestore Leatherworks <span class="branch-name">| Admin Dashboard</span></h1>
+    </div>
+    <nav class="nav-buttons">
+      <a href="admin.html">Home</a>
+      <a href="admin_announcement.html">Announcements</a>
+      <a href="admin_reports.html">Reports</a>
+      <a href="admin_appointment.html">Appointments</a>
+      <a href="admin_customerlist.html">Customers</a>
+      <a href="admin_attendance.html">Attendance</a>
+    </nav>
+  </header>
+
+  <div class="main-content">
+    <div class="content-box">
+      <h2>Appointments Management</h2>
+
+      <div class="action-buttons">
+        <button onclick="openModal()">Add Appointment</button>
+        <button onclick="exportToCSV()">Export to CSV</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+
+      <div style="margin-bottom: 1rem; text-align: center;">
+        <input type="text" id="searchInput" placeholder="Search by branch or date" oninput="filterTable()" style="padding: 0.5rem; border-radius: 0.5rem; width: 60%;" />
+      </div>
+
+     <div class="table-container">
+  <table id="appointmentsTable">
+    <thead>
+      <tr>
+        <th>Branch</th>
+        <th>Date</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+
+      <div class="summary" id="summary"></div>
+      <div id="calendar"></div>
+
+
+    </div>
+  </div>
+
+  <div class="modal" id="appointmentModal">
+    <div class="modal-content">
+      <h3>Add Appointment</h3>
+      <label for="branch">Branch</label>
+      <select id="branch" required>
+        <option value="Bacolod">Bacolod</option>
+        <option value="Abreeza">Abreeza</option>
+        <option value="General Santos">General Santos</option>
+        <option value="Cagayan de Oro">Cagayan de Oro</option>
+        <option value="Greenhills">Greenhills</option>
+        <option value="SM Lanang">SM Lanang</option>
+      </select>
+      <label for="type">Type</label>
+      <select id="type" required>
+        <option value="completion">Completion Date</option>
+        <option value="due">Due Date</option>
+        <option value="pickup">Pick up</option>
+      </select>
+      <label for="title">Title</label>
+      <input type="text" id="title" required placeholder="e.g. Bag ready for pickup"/>
+      <label for="date">Date</label>
+      <input type="date" id="date" required/>
+      <input type="hidden" id="editingId" />
+       <div style="display: flex; gap: 1rem;">
+  <button type="button" onclick="submitAppointment()" style="flex: 1;">Save</button>
+  <button type="button" onclick="closeModal()" style="flex: 1; background-color: #ccc; color: #000;">Cancel</button>
+</div>
+
+    </div>
+
+  </div>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc
+  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAWUoFS5NNcxUa5Pu57q7jEXLqEeKpJsg",
+    authDomain: "erestore-leatherworks.firebaseapp.com",
+    projectId: "erestore-leatherworks",
+    storageBucket: "erestore-leatherworks.firebasestorage.app",
+    messagingSenderId: "727698074030",
+    appId: "1:727698074030:web:58870b6be96934e71c003f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const collections = {
+    'Greenhills': 'gh_appointments',
+    'Abreeza': 'abreeza_appointments',
+    'Bacolod': 'bcd_appointments',
+    'Cagayan de Oro': 'cdo_appointments',
+    'General Santos': 'gensan_appointments',
+    'SM Lanang': 'lanang_appointments'
+  };
+
+  let appointments = [];
+  let calendar;
+
+  async function loadAppointments() {
+    appointments = [];
+    for (const [branch, collName] of Object.entries(collections)) {
+      const snap = await getDocs(collection(db, collName));
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        appointments.push({
+          id: docSnap.id,
+          ...data,
+          branch,
+          _collection: collName
+        });
+      });
+    }
+    renderTable();
+    renderCalendar();
+  }
+
+  function renderTable() {
+    const tbody = document.querySelector('#appointmentsTable tbody');
+    tbody.innerHTML = '';
+    appointments.forEach((a, i) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${a.branch}</td>
+        <td>${a.date}</td>
+        <td>${a.title}</td>
+        <td>${a.type}</td>
+        <td>
+          <button onclick="editAppointment(${i})">Edit</button>
+          <button onclick="deleteAppointment(${i})">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+    document.getElementById('summary').innerText = `Total Appointments: ${appointments.length}`;
+  }
+
+  function renderCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    if (calendar) calendar.destroy();
+
+    calendar = new Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      height: 600,
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: ''
+      },
+      dateClick: function(info) {
+        const clickedDate = info.dateStr;
+        const filtered = appointments.filter(a => a.date === clickedDate);
+
+        if (filtered.length > 0) {
+          const messages = filtered.map(a => `• ${a.branch} - ${a.title} (${a.type})`).join('\n');
+          alert(`Appointments on ${clickedDate}:\n\n${messages}`);
+        } else {
+          alert(`No appointments on ${clickedDate}`);
+        }
+      },
+      events: appointments.map(app => ({
+        title: `${app.branch}: ${app.title}`,
+        start: app.date,
+        backgroundColor: '#800000',
+        borderColor: '#800000'
+      }))
+    });
+
+    calendar.render();
+  }
+
+  function openModal() {
+    document.getElementById('appointmentModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('appointmentModal').style.display = 'none';
+    document.getElementById('editingId').value = '';
+    document.getElementById('branch').value = 'Greenhills';
+    document.getElementById('title').value = '';
+    document.getElementById('date').value = '';
+    document.getElementById('type').value = 'completion';
+  }
+
+  async function submitAppointment() {
+    const branch = document.getElementById('branch').value;
+    const title = document.getElementById('title').value;
+    const date = document.getElementById('date').value;
+    const type = document.getElementById('type').value;
+    const id = document.getElementById('editingId').value;
+    const collName = collections[branch];
+    const data = { title, date, type };
+
+    if (id) {
+      const ref = doc(db, collName, id);
+      await updateDoc(ref, data);
+    } else {
+      await addDoc(collection(db, collName), data);
+    }
+
+    closeModal();
+    await loadAppointments();
+  }
+
+  async function editAppointment(index) {
+    const app = appointments[index];
+    document.getElementById('branch').value = app.branch;
+    document.getElementById('title').value = app.title;
+    document.getElementById('date').value = app.date;
+    document.getElementById('type').value = app.type;
+    document.getElementById('editingId').value = app.id;
+    openModal();
+  }
+
+  async function deleteAppointment(index) {
+    if (confirm('Delete this appointment?')) {
+      const app = appointments[index];
+      const ref = doc(db, app._collection, app.id);
+      await deleteDoc(ref);
+      await loadAppointments();
+    }
+  }
+
+  function exportToCSV() {
+    let csv = 'Branch,Date,Title,Type\n';
+    appointments.forEach(app => {
+      csv += `"${app.branch}","${app.date}","${app.title}","${app.type}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'appointments.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // Expose functions to global for inline use
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.submitAppointment = submitAppointment;
+  window.editAppointment = editAppointment;
+  window.deleteAppointment = deleteAppointment;
+  window.exportToCSV = exportToCSV;
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    loadAppointments();
+  }, 100); // slight delay to ensure DOM and styles are ready
+});
+
+</script>
+
+</body>
+</html>
