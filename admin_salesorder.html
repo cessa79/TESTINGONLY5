@@ -254,6 +254,7 @@
     style="padding: 0.6rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 0.9rem; max-width: 160px;" />
 </div>
 
+<button onclick="resetFirestoreCollection()">Reset All Data</button>
 
  
         <select id="branchFilter" onchange="filterByDate()" 
@@ -324,6 +325,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+
+async function resetFirestoreCollection() {
+    const confirmReset = confirm("Are you sure you want to delete all records?");
+    if (!confirmReset) return;
+
+    const collectionName = "lanang_salesOrders"; // change this to your collection
+    const snapshot = await getDocs(collection(db, collectionName));
+    const deletions = snapshot.docs.map(docSnap =>
+      deleteDoc(doc(db, collectionName, docSnap.id))
+    );
+
+    await Promise.all(deletions);
+    alert("All documents deleted from " + collectionName);
+  }
     window.showImages = function(imageList) {
       const modal = document.getElementById('imageModal');
       modal.innerHTML = '<button onclick="document.getElementById(\'imageModal\').style.display=\'none\'">Close</button>';
